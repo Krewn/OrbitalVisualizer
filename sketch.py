@@ -1,20 +1,13 @@
-import spacialutils
+import spacialutils as spu
 import time
 import threeJS
 
-class satellite:
-    def init(self,radialCord,radialVelocity):
-        self.t0 = time.time()
-        self.p0 = radialCord
-        self.v0 = radialVelocity
-
-class centeralBody:
-    def init(self):
-        self.satellites = []
-    def draw(self):
-        pass  # todo
-
+spu.parentBody(spu.satellite())
 s = threeJS.scene()
 s.output()
 
+scene = threeJS.scene()
+scene.add(threeJS.sphere())
+scene.add(threeJS.sphere(spu.vector3(1.5,0,0),size=0.1,name="satellite"))
+scene.output()
 

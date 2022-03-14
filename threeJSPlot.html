@@ -8,7 +8,7 @@
         
         <h1>FooBarBaz</h1>
         <p>LaDeDa</p>
-        <script src=./three.min.js></script>
+        <script src=../three.min.js></script>
         <script>var scene = new THREE.Scene();
         var camera = new THREE.PerspectiveCamera( 75, window.innerWidth/window.innerHeight, 0.1, 1000 );
 
@@ -16,25 +16,45 @@
         renderer.setSize( window.innerWidth, window.innerHeight );
         document.body.appendChild( renderer.domElement );
 
-        var geometry = new THREE.BoxGeometry( 1, 1, 1 );
-        var material = new THREE.MeshLambertMaterial( { color: 0x00ff00 } );
-        var cube = new THREE.Mesh( geometry, material );
-        scene.add( cube );
+        
+        var earth_geometry = new THREE.SphereGeometry(1, 32, 32);
+        var earth_material = new THREE.MeshPhongMaterial();
+        var earth_mesh = new THREE.Mesh(earth_geometry, earth_material);
+        earth_mesh.position.set(0,0,0);
+        //earth_material.map = THREE.ImageUtils.loadTexture('../earth.jpg');
+        scene.add(earth_mesh);
+        
+
+        var satellite_geometry = new THREE.SphereGeometry(0.1, 32, 32);
+        var satellite_material = new THREE.MeshPhongMaterial();
+        var satellite_mesh = new THREE.Mesh(satellite_geometry, satellite_material);
+        satellite_mesh.position.set(1.5,0,0);
+        //satellite_material.map = THREE.ImageUtils.loadTexture('../earth.jpg');
+        scene.add(satellite_mesh);
+        
         
         var light = new THREE.HemisphereLight(0xf6e86d, 0x404040, 0.5);
         scene.add(light);
         
-        camera.position.z = 5;
+        camera.position.x = 0;
+        camera.position.y = -5;
+        camera.position.z = 0;
+        camera.lookAt(new THREE.Vector3( 0, 0, 0));
+        
+        var render = function () {
+            requestAnimationFrame( render );
+            renderer.render(scene, camera);
+        }
 
         //Create an render loop to allow animation
-        var render = function () {
+        /*var render = function () {
             requestAnimationFrame( render );
 
             cube.rotation.x += 0.1;
             cube.rotation.y += 0.1;
 
             renderer.render(scene, camera);
-        };
+        };*/
 
         render();
         </script>
