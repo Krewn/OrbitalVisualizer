@@ -8,30 +8,41 @@
         
         <h1>FooBarBaz</h1>
         <p>LaDeDa</p>
-        <script src=../three.min.js></script>
-        <script>var scene = new THREE.Scene();
+        </script><script src=../three.min.js></script>
+        </script><script src=../TrackballControls.js></script>
+        <!-- 
+        <script src="http://threejs.org/build/three.min.js"></script>
+        <script src="https://threejs.org/examples/js/controls/TrackballControls.js"></script> 
+        -->
+        <script>
+        var scene = new THREE.Scene();
         var camera = new THREE.PerspectiveCamera( 75, window.innerWidth/window.innerHeight, 0.1, 1000 );
-
+        
         var renderer = new THREE.WebGLRenderer();
         renderer.setSize( window.innerWidth, window.innerHeight );
-        document.body.appendChild( renderer.domElement );
-
         
-        var earth_geometry = new THREE.SphereGeometry(1, 32, 32);
-        var earth_material = new THREE.MeshPhongMaterial();
-        var earth_mesh = new THREE.Mesh(earth_geometry, earth_material);
-        earth_mesh.position.set(0,0,0);
-        //earth_material.map = THREE.ImageUtils.loadTexture('../earth.jpg');
-        scene.add(earth_mesh);
-        
-
-        var satellite_geometry = new THREE.SphereGeometry(0.1, 32, 32);
-        var satellite_material = new THREE.MeshPhongMaterial();
-        var satellite_mesh = new THREE.Mesh(satellite_geometry, satellite_material);
-        satellite_mesh.position.set(1.5,0,0);
-        //satellite_material.map = THREE.ImageUtils.loadTexture('../earth.jpg');
-        scene.add(satellite_mesh);
-        
+        var objects = [
+            {
+                name : "earth",
+                mesh : new THREE.Mesh(new THREE.SphereGeometry(1, 32, 32), new THREE.MeshPhongMaterial()),
+                init : function(scene){
+                this.mesh.position.set(0,0,0);
+                //this.material.map = THREE.ImageUtils.loadTexture('../earth.jpg');
+                scene.add(this.mesh);
+                },
+                animate : function(t){return}
+            },
+            {
+                name : "satellite",
+                mesh : new THREE.Mesh(new THREE.SphereGeometry(0.1, 32, 32), new THREE.MeshPhongMaterial()),
+                init : function(scene){
+                this.mesh.position.set(1.5,0,0);
+                //this.material.map = THREE.ImageUtils.loadTexture('../earth.jpg');
+                scene.add(this.mesh);
+                },
+                animate : function(t){this.mesh.position.set(Math.sin(t)*1.5,Math.cos(t)*1.5,0);}
+            }];
+        objects.forEach(object => object.init(scene));
         
         var light = new THREE.HemisphereLight(0xf6e86d, 0x404040, 0.5);
         scene.add(light);
@@ -40,24 +51,27 @@
         camera.position.y = -5;
         camera.position.z = 0;
         camera.lookAt(new THREE.Vector3( 0, 0, 0));
-        
+        var timeStep = 0.01;
+        var time = 0;
+        var controls = new THREE.TrackballControls( camera, renderer.domElement );
+        controls.target.set( 0, 0, 0 ); // Zoom works rotation does not.
         var render = function () {
+            time += timeStep;
             requestAnimationFrame( render );
+            objects.forEach(object => object.animate(time));
+            controls.update();
             renderer.render(scene, camera);
         }
-
-        //Create an render loop to allow animation
-        /*var render = function () {
-            requestAnimationFrame( render );
-
-            cube.rotation.x += 0.1;
-            cube.rotation.y += 0.1;
-
-            renderer.render(scene, camera);
-        };*/
-
-        render();
-        </script>
+        window.addEventListener('resize', onWindowResize, false)
+        function onWindowResize() {
+            camera.aspect = window.innerWidth / window.innerHeight
+            camera.updateProjectionMatrix()
+            renderer.setSize(window.innerWidth, window.innerHeight)
+            render()
+        } // this causes the scene to accelerate for some reason...
+        
+        document.body.appendChild( renderer.domElement );
+        render();</script>
         </body>
         </html>
         

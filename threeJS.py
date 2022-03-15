@@ -1,19 +1,23 @@
 import spacialutils as spu
 
 class sphere:
-    def __init__(self,position=spu.vector3(0,0,0),size=1,name="earth"):
+    def __init__(self,position=spu.vector3(0,0,0),size=1,name="earth",motion="function(t){return}"):
         self.position = position
         self.size = size
         self.name = name
+        self.motion = motion
     def script(self):
         return f"""
-        var {self.name}_geometry = new THREE.SphereGeometry({self.size}, 32, 32);
-        var {self.name}_material = new THREE.MeshPhongMaterial();
-        var {self.name}_mesh = new THREE.Mesh({self.name}_geometry, {self.name}_material);
-        {self.name}_mesh.position.set({self.position.x},{self.position.y},{self.position.z});
-        //{self.name}_material.map = THREE.ImageUtils.loadTexture('../earth.jpg');
-        scene.add({self.name}_mesh);
-        """
+            {"{"}
+                name : "{self.name}",
+                mesh : new THREE.Mesh(new THREE.SphereGeometry({self.size}, 32, 32), new THREE.MeshPhongMaterial()),
+                init : function(scene){"{"}
+                this.mesh.position.set({self.position.x},{self.position.y},{self.position.z});
+                //this.material.map = THREE.ImageUtils.loadTexture('../earth.jpg');
+                scene.add(this.mesh);
+                {"}"},
+                animate : {self.motion}
+            {"}"}"""
 
 class conicSection:
     def __init__(self,normalVector = spu.vector3(0,0,1)):
@@ -36,7 +40,12 @@ class scene:
         
         <h1>FooBarBaz</h1>
         <p>LaDeDa</p>
-        <script src=../three.min.js></script>
+        </script><script src=../three.min.js></script>
+        </script><script src=../TrackballControls.js></script>
+        <!-- 
+        <script src="http://threejs.org/build/three.min.js"></script>
+        <script src="https://threejs.org/examples/js/controls/TrackballControls.js"></script> 
+        -->
         <script>"""+self.script()+"""</script>
         </body>
         </html>
@@ -45,14 +54,15 @@ class scene:
             f.write(doc)
         return(doc)
     def script(self):
-        return """var scene = new THREE.Scene();
+        return """
+        var scene = new THREE.Scene();
         var camera = new THREE.PerspectiveCamera( 75, window.innerWidth/window.innerHeight, 0.1, 1000 );
-
+        
         var renderer = new THREE.WebGLRenderer();
         renderer.setSize( window.innerWidth, window.innerHeight );
-        document.body.appendChild( renderer.domElement );
-
-        """+"\n".join([object.script() for object in self.objects])+"""
+        
+        var objects = ["""+",".join([object.script() for object in self.objects])+"""];
+        objects.forEach(object => object.init(scene));
         
         var light = new THREE.HemisphereLight(0xf6e86d, 0x404040, 0.5);
         scene.add(light);
@@ -61,24 +71,27 @@ class scene:
         camera.position.y = -5;
         camera.position.z = 0;
         camera.lookAt(new THREE.Vector3( 0, 0, 0));
-        
+        var timeStep = 0.01;
+        var time = 0;
+        var controls = new THREE.TrackballControls( camera, renderer.domElement );
+        controls.target.set( 0, 0, 0 ); // Zoom works rotation does not.
         var render = function () {
+            time += timeStep;
             requestAnimationFrame( render );
+            objects.forEach(object => object.animate(time));
+            controls.update();
             renderer.render(scene, camera);
         }
-
-        //Create an render loop to allow animation
-        /*var render = function () {
-            requestAnimationFrame( render );
-
-            cube.rotation.x += 0.1;
-            cube.rotation.y += 0.1;
-
-            renderer.render(scene, camera);
-        };*/
-
-        render();
-        """
+        window.addEventListener('resize', onWindowResize, false)
+        function onWindowResize() {
+            camera.aspect = window.innerWidth / window.innerHeight
+            camera.updateProjectionMatrix()
+            renderer.setSize(window.innerWidth, window.innerHeight)
+            render()
+        } // this causes the scene to accelerate for some reason...
+        
+        document.body.appendChild( renderer.domElement );
+        render();"""
 
 
 
