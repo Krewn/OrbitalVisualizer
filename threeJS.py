@@ -10,10 +10,13 @@ class sphere:
         return f"""
             {"{"}
                 name : "{self.name}",
-                mesh : new THREE.Mesh(new THREE.SphereGeometry({self.size}, 32, 32), new THREE.MeshPhongMaterial()),
+                geomerty: new THREE.SphereGeometry({self.size}, 32, 32),
+                material: new THREE.MeshPhongMaterial(),
+                mesh : new THREE.Mesh(new THREE.SphereGeometry({self.size}, 32, 32) ,new THREE.MeshPhongMaterial()),
                 init : function(scene){"{"}
+                //this.material.map = THREE.ImageUtils.loadTexture('earth.jpg');
+                //this.mesh = new THREE.Mesh(this.geometry ,this.material);
                 this.mesh.position.set({self.position.x},{self.position.y},{self.position.z});
-                //this.material.map = THREE.ImageUtils.loadTexture('../earth.jpg');
                 scene.add(this.mesh);
                 {"}"},
                 animate : {self.motion}
@@ -60,6 +63,7 @@ class scene:
         
         var renderer = new THREE.WebGLRenderer();
         renderer.setSize( window.innerWidth, window.innerHeight );
+        document.body.appendChild( renderer.domElement );
         
         var objects = ["""+",".join([object.script() for object in self.objects])+"""];
         objects.forEach(object => object.init(scene));
@@ -70,18 +74,19 @@ class scene:
         camera.position.x = 0;
         camera.position.y = -5;
         camera.position.z = 0;
+        camera.up = new THREE.Vector3(0, 0, 1);
         camera.lookAt(new THREE.Vector3( 0, 0, 0));
         var timeStep = 0.01;
         var time = 0;
         var controls = new THREE.TrackballControls( camera, renderer.domElement );
         controls.target.set( 0, 0, 0 ); // Zoom works rotation does not.
         var renderOnce = function () {
-            time += timeStep;
             objects.forEach(object => object.animate(time));
             controls.update();
             renderer.render(scene, camera);
         }
         var render = function () {
+            time += timeStep;
             renderOnce();
             requestAnimationFrame( render );
         }
@@ -93,7 +98,6 @@ class scene:
             renderOnce();
         }
         
-        document.body.appendChild( renderer.domElement );
         render();"""
 
 
