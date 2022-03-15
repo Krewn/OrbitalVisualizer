@@ -75,20 +75,23 @@ class scene:
         var time = 0;
         var controls = new THREE.TrackballControls( camera, renderer.domElement );
         controls.target.set( 0, 0, 0 ); // Zoom works rotation does not.
-        var render = function () {
+        var renderOnce = function () {
             time += timeStep;
-            requestAnimationFrame( render );
             objects.forEach(object => object.animate(time));
             controls.update();
             renderer.render(scene, camera);
         }
+        var render = function () {
+            renderOnce();
+            requestAnimationFrame( render );
+        }
         window.addEventListener('resize', onWindowResize, false)
         function onWindowResize() {
-            camera.aspect = window.innerWidth / window.innerHeight
-            camera.updateProjectionMatrix()
-            renderer.setSize(window.innerWidth, window.innerHeight)
-            render()
-        } // this causes the scene to accelerate for some reason...
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            renderOnce();
+        }
         
         document.body.appendChild( renderer.domElement );
         render();"""
